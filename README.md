@@ -52,6 +52,23 @@ python evaluate.py \
     --n_samples 10
 ```
 
+**Answer-only baseline (no chain-of-thought):** add `--no-cot`.
+
+## Scoring
+
+By default the model writes a rule-by-rule analysis (in English) inside `<analysis>` tags before giving its verdict. The verdict is then scored in a second pass: the analysis and `<answer>\n` are appended to the prompt and the model's next-token probabilities for PASS and FAIL give **`p_fail`**, a score from 0 to 1. `predicted_label` is FAIL when `p_fail > 0.5`.
+
+The headline metric is **AUROC** on `p_fail`: the probability that a randomly chosen FAIL sample scores higher than a randomly chosen PASS sample (1.0 is perfect, 0.5 is chance). It is reported alongside accuracy and macro F1, overall and per language, country and domain. Each output row also records `reasoning`, `format_ok`, `reasoning_truncated` and `p_fail_clamped` as validity checks.
+
+## Tests
+
+Tests don't need vLLM or a GPU:
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
 ## Data Format
 
 Each line in the input JSONL files contains the following fields:
