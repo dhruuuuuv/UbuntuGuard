@@ -1,3 +1,7 @@
-vllm>=0.6.0
+# p_fail depends on how vLLM reports log-probabilities, so keep this pinned.
+# On aarch64 (e.g. Isambard-AI GH200), install with:
+#   uv pip install "vllm[flashinfer]==0.15.1" --torch-backend=cu129 \
+#       --extra-index-url https://wheels.vllm.ai/0.15.1/vllm
+vllm==0.15.1
 tqdm
 pandas
