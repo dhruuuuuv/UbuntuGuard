@@ -56,9 +56,9 @@ python evaluate.py \
 
 ## Scoring
 
-By default the model writes a rule-by-rule analysis (in English) inside `<analysis>` tags before giving its verdict. The verdict is then scored in a second pass: the analysis and `<answer>\n` are appended to the prompt and the model's next-token probabilities for PASS and FAIL give **`p_fail`**, a score from 0 to 1. `predicted_label` is FAIL when `p_fail > 0.5`.
+By default the model writes a rule-by-rule analysis (in English) inside `<analysis>` tags before giving its verdict. The verdict is then scored in a second pass: the analysis and `<answer>\n` are appended to the prompt, and the model's exact probabilities for the PASS and FAIL tokens at that position give **`p_fail`** = P(FAIL) / (P(PASS) + P(FAIL)), a score from 0 to 1. `predicted_label` is FAIL when `p_fail > 0.5`.
 
-The headline metric is **AUROC** on `p_fail`: the probability that a randomly chosen FAIL sample scores higher than a randomly chosen PASS sample (1.0 is perfect, 0.5 is chance). It is reported alongside accuracy and macro F1, overall and per language, country and domain. Each output row also records `reasoning`, `format_ok`, `reasoning_truncated` and `p_fail_clamped` as validity checks.
+The headline metric is **AUROC**: the probability that a randomly chosen FAIL sample scores higher than a randomly chosen PASS sample (1.0 is perfect, 0.5 is chance). It is computed on `fail_log_odds` (log P(FAIL) − log P(PASS)), which orders samples exactly as `p_fail` does but doesn't round very confident scores to 0 or 1. It is reported alongside accuracy and macro F1, overall and per language, country and domain. Each output row also records `reasoning`, `format_ok`, `reasoning_truncated` and `verdict_mass` (P(PASS) + P(FAIL)) as validity checks.
 
 ## Tests
 
