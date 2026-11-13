@@ -2,23 +2,23 @@ import math
 
 import pytest
 
-from evaluate import auroc, p_fail_from_logprobs
-
-VERDICT_IDS = {"PASS": 1, "FAIL": 2}
+from evaluate import auroc, verdict_scores
 
 
-def test_p_fail_normalises_over_the_two_labels():
-    top = {1: math.log(0.25), 2: math.log(0.70), 3: math.log(0.05)}
-    assert p_fail_from_logprobs(top, VERDICT_IDS) == (pytest.approx(0.70 / 0.95), False)
+def test_verdict_scores_normalise_over_the_two_labels():
+    s = verdict_scores(math.log(0.25), math.log(0.70))
+    assert s["p_fail"] == pytest.approx(0.70 / 0.95)
+    assert s["fail_log_odds"] == pytest.approx(math.log(0.70 / 0.25))
+    assert s["verdict_mass"] == pytest.approx(0.95)
 
 
-def test_p_fail_missing_labels():
-    # One label missing: clamped to the lowest returned log-probability
-    p_fail, clamped = p_fail_from_logprobs({2: -0.01, 3: -9.0}, VERDICT_IDS)
-    assert p_fail == pytest.approx(math.exp(-0.01) / (math.exp(-0.01) + math.exp(-9.0)))
-    assert clamped
-    # Both missing: no score
-    assert p_fail_from_logprobs({3: -0.1}, VERDICT_IDS) == (None, True)
+def test_verdict_scores_keep_order_when_very_confident():
+    # p_fail rounds to 1.0 for both, but log-odds still rank them
+    a = verdict_scores(-50.0, -1e-6)
+    b = verdict_scores(-80.0, -1e-6)
+    assert a["p_fail"] == b["p_fail"] == 1.0
+    assert b["fail_log_odds"] > a["fail_log_odds"]
+    assert verdict_scores(-1e-6, -900.0)["p_fail"] == 0.0  # no overflow
 
 
 def test_auroc():
